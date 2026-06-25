@@ -46,6 +46,14 @@ guests contribute photos to one shared collection.
 - LIMITS: None for now. FUTURE TOPIC (revisit): client-side compression
   for very large files (example threshold ~300 MB) before upload.
 - HOSTING (for now): GitHub Pages (github.io) - static hosting only.
+    * Repo:     https://github.com/eldharon/WeseleChrupakow
+    * Account:  eldharon
+    * Visibility: PUBLIC (required for free GitHub Pages)
+    * Live URL: https://eldharon.github.io/WeseleChrupakow/
+    * Branch/path served: main, root (/)
+    * Note: repo name was requested as "WeseleChrupaków" but GitHub
+      disallows non-ASCII; used "WeseleChrupakow". Display title inside
+      the app can still be styled/Polish separately.
 - STORAGE (for now): NONE wired up yet. See section 3 (important).
 - BACKEND (for now): Intentionally left OUT. To be added later when the
   on-prem server is ready (see section 4).
@@ -129,7 +137,7 @@ Only its body (the actual network call to the server) needs to change.
 7. STATUS
 ------------------------------------------------------------------------
 [x] Frontend page built  (index.html, styles.css, app.js)
-[ ] Hosted on GitHub Pages
+[x] Hosted on GitHub Pages
 [ ] QR code generated from final URL
 [x] Polish wording confirmed  (PRZEŚLIJ ZDJĘCIA / WYŚLIJ)
 [x] Limits/protection decided  (none for v1; compression is a future topic)
