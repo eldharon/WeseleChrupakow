@@ -169,8 +169,17 @@ Only its body (the actual network call to the server) needs to change.
 [x] User deployed the Apps Script & provided the /exec URL
 [x] CONFIG.WEB_APP_URL filled in app.js + pushed
 [x] End-to-end test PASSED (test file landed in the Drive folder)
+[x] Large preview (layout #2) + 100-file cap added and deployed
 [ ] Generate QR code from the live URL
 [ ] On-prem server (optional future alternative)
+
+UI BEHAVIOUR (current):
+  - Big size-capped preview (max 42vh) of the focused file sits above a
+    compact thumbnail grid (layout #2). Tap a thumbnail to focus it; the
+    most recently added file auto-focuses. Only ONE media element exists
+    in the big preview at a time (display-scaled only) to stay fast.
+  - MAX_FILES = 100; extra picks are rejected with "Maksymalnie 100
+    plików." (constant in app.js).
 
 LIVE CONFIG:
   Drive folder ID:  1ngd11zAA9l3wL64o-eipMfzL1-c2R0yZ
