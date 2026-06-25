@@ -9,6 +9,14 @@
 (function () {
   "use strict";
 
+  // ----- CONFIG --------------------------------------------------------
+  // Paste your deployed Google Apps Script Web App URL here (ends /exec).
+  // See google-apps-script.gs for how to get it. Until this is filled in,
+  // the SEND button will show a clear "not configured" error.
+  var CONFIG = {
+    WEB_APP_URL: ""
+  };
+
   // ----- Polish UI strings (kept in one place for easy editing) -----
   var STR = {
     sendDefault: "WYŚLIJ",
@@ -142,45 +150,61 @@
     updateUi();
   }
 
-  // ----- Upload: PLACEHOLDER -------------------------------------------
-  // TODO(backend): replace the simulated progress below with a real
-  // upload to the on-prem server. Reference implementation outline:
-  //
-  //   function uploadFiles(items, onProgress) {
-  //     return new Promise(function (resolve, reject) {
-  //       var form = new FormData();
-  //       items.forEach(function (it) { form.append("files", it.file, it.file.name); });
-  //       var xhr = new XMLHttpRequest();
-  //       xhr.open("POST", "https://YOUR-SERVER/upload");
-  //       xhr.upload.onprogress = function (e) {
-  //         if (e.lengthComputable) onProgress(e.loaded / e.total);
-  //       };
-  //       xhr.onload = function () {
-  //         (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error("HTTP " + xhr.status));
-  //       };
-  //       xhr.onerror = function () { reject(new Error("network")); };
-  //       xhr.send(form);
-  //     });
-  //   }
-  //
-  // Server must allow CORS from the GitHub Pages origin and be served
-  // over HTTPS (the page is HTTPS; http would be blocked as mixed content).
-  function uploadFiles(items, onProgress) {
-    // Simulated upload so the UI is fully testable without a backend.
-    return new Promise(function (resolve) {
-      var p = 0;
-      var timer = setInterval(function () {
-        p += 0.08 + Math.random() * 0.1;
-        if (p >= 1) {
-          p = 1;
-          clearInterval(timer);
-          onProgress(p);
-          setTimeout(resolve, 200);
-        } else {
-          onProgress(p);
-        }
-      }, 180);
+  // ----- Upload: Google Drive via Apps Script --------------------------
+  // Each file is read as base64 and POSTed to the Apps Script web app,
+  // which saves it into your Drive folder. We send a plain-string body so
+  // the browser treats it as a "simple" request and skips the CORS
+  // preflight that Apps Script cannot answer.
+
+  function readAsBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        // result looks like "data:<mime>;base64,XXXX" - keep only XXXX.
+        var s = String(reader.result);
+        resolve(s.substring(s.indexOf(",") + 1));
+      };
+      reader.onerror = function () { reject(new Error("read failed")); };
+      reader.readAsDataURL(file);
     });
+  }
+
+  function uploadOne(item) {
+    return readAsBase64(item.file).then(function (b64) {
+      var payload = JSON.stringify({
+        filename: item.file.name || ("upload-" + Date.now()),
+        mimeType: item.file.type || "application/octet-stream",
+        data: b64
+      });
+      return fetch(CONFIG.WEB_APP_URL, { method: "POST", body: payload })
+        .then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.text();
+        })
+        .then(function (text) {
+          var ok = false;
+          try { ok = JSON.parse(text).ok === true; } catch (e) { ok = false; }
+          if (!ok) throw new Error("server rejected upload");
+        });
+    });
+  }
+
+  function uploadFiles(items, onProgress) {
+    if (!CONFIG.WEB_APP_URL) {
+      return Promise.reject(new Error("WEB_APP_URL not configured"));
+    }
+    var total = items.length;
+    var done = 0;
+    // Upload one file at a time: gentler on phones, and progress is
+    // meaningful (advances once per finished file).
+    return items.reduce(function (chain, item) {
+      return chain.then(function () {
+        return uploadOne(item).then(function () {
+          done += 1;
+          onProgress(done / total);
+        });
+      });
+    }, Promise.resolve());
   }
   // ---------------------------------------------------------------------
 

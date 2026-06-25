@@ -54,9 +54,31 @@ guests contribute photos to one shared collection.
     * Note: repo name was requested as "WeseleChrupaków" but GitHub
       disallows non-ASCII; used "WeseleChrupakow". Display title inside
       the app can still be styled/Polish separately.
-- STORAGE (for now): NONE wired up yet. See section 3 (important).
-- BACKEND (for now): Intentionally left OUT. To be added later when the
-  on-prem server is ready (see section 4).
+- STORAGE (CHOSEN): a Google DRIVE folder owned by the user.
+    * NOT Google Photos - its API was restricted in 2025 and cannot take
+      anonymous guest uploads into the owner's library. Drive folder is
+      the practical target.
+    * Mechanism: a Google APPS SCRIPT web app (file google-apps-script.gs)
+      acts as the backend. It runs AS the owner, so it may write to the
+      owner's Drive; it is deployed with "Anyone" access so guests need no
+      login. The website POSTs each file (base64) to the script URL; the
+      script saves it into the Drive folder. No credential/token is ever
+      placed in the public website.
+    * Connection point: CONFIG.WEB_APP_URL in app.js (currently EMPTY -
+      must be filled with the deployed /exec URL).
+- BACKEND: Google Apps Script web app (see google-apps-script.gs). The
+  on-prem server is still a possible FUTURE alternative; if/when built,
+  just point CONFIG.WEB_APP_URL (or uploadFiles) at it instead.
+
+  KNOWN LIMITS of the Apps Script route:
+    * Good for photos and short videos. Each file is sent base64 in one
+      request; Apps Script caps payloads (~50 MB), so LARGE VIDEOS will
+      fail. This is exactly why "compress large files" stays a future
+      topic, and/or large media waits for the on-prem server.
+    * Anyone with the script URL can POST to it (no auth yet). Fine for a
+      trusted event; can add a shared secret later if needed.
+    * If reading the response is blocked by CORS in practice, fall back to
+      fetch(..., {mode:"no-cors"}) fire-and-forget (can't read result).
 
 ------------------------------------------------------------------------
 3. IMPORTANT TECHNICAL CONSTRAINT (read this)
@@ -141,14 +163,25 @@ Only its body (the actual network call to the server) needs to change.
 [ ] QR code generated from final URL
 [x] Polish wording confirmed  (PRZEŚLIJ ZDJĘCIA / WYŚLIJ)
 [x] Limits/protection decided  (none for v1; compression is a future topic)
-[ ] On-prem server built
-[ ] Backend plugged into the placeholder upload function
+[x] Storage target chosen: Google Drive folder via Apps Script
+[x] Apps Script backend written (google-apps-script.gs)
+[x] Website wired to upload to Apps Script (real uploadFiles in app.js)
+[ ] User deploys the Apps Script & provides the /exec URL
+[ ] CONFIG.WEB_APP_URL filled in app.js + pushed
+[ ] End-to-end test (guest phone -> Drive folder)
+[ ] On-prem server (optional future alternative)
 
-Currently: frontend built and testable locally. The SEND action is a
-SIMULATED placeholder (see uploadFiles() in app.js) - it shows realistic
-progress but does NOT send anywhere yet. Next steps: push to GitHub, turn
-on Pages, generate the QR from the URL. Backend gets plugged into the one
-placeholder function later.
+Currently: code is ready to upload to Google Drive, but it is NOT live
+until the user deploys google-apps-script.gs and we paste the resulting
+/exec URL into CONFIG.WEB_APP_URL in app.js. Until then, pressing SEND
+shows a "not configured" error on purpose.
+
+TO FINISH (user's part, in Google account):
+  Follow the SETUP steps at the top of google-apps-script.gs:
+  create a Drive folder, paste its ID into FOLDER_ID, deploy as a Web app
+  (Execute as: Me / Who has access: Anyone), then hand the /exec URL back.
+THEN (Claude's part):
+  Put that URL in CONFIG.WEB_APP_URL, push, and test end-to-end.
 
 ------------------------------------------------------------------------
 8. HOW TO RESUME THIS PROJECT
