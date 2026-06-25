@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>Prześlij zdjęcia</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <h1 class="title">Prześlij zdjęcia</h1>
+      <p class="subtitle">Wybierz zdjęcia i filmy z telefonu, a następnie naciśnij „Wyślij”.</p>
+    </header>
+
+    <!-- Hidden native picker. accept covers images + videos; multiple allows multi-select. -->
+    <input id="fileInput" class="hidden" type="file" accept="image/*,video/*" multiple />
+
+    <!-- Big primary button: opens the phone's photo/video library -->
+    <button id="pickButton" class="pick-button" type="button">
+      <span class="pick-icon" aria-hidden="true">＋</span>
+      <span>PRZEŚLIJ ZDJĘCIA</span>
+    </button>
+
+    <!-- Count of selected items -->
+    <p id="selectionInfo" class="selection-info" hidden></p>
+
+    <!-- Thumbnail previews of selected files -->
+    <section id="previews" class="previews" aria-live="polite"></section>
+
+    <!-- Spacer so the sticky footer never covers the last thumbnails -->
+    <div class="footer-spacer"></div>
+  </main>
+
+  <!-- Always-visible send bar fixed to the bottom -->
+  <footer class="send-bar">
+    <button id="sendButton" class="send-button" type="button" disabled>
+      <span id="sendLabel">WYŚLIJ</span>
+    </button>
+    <div id="progressWrap" class="progress-wrap" hidden>
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

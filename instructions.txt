@@ -1,0 +1,151 @@
+========================================================================
+PHOTOTOOL - PROJECT INSTRUCTIONS & DECISIONS LOG
+========================================================================
+Last updated: 2026-06-25
+Purpose of this file: a single place that captures everything we have
+agreed on, so the project can be picked up again at any time (by you or
+by Claude in a fresh conversation). Read this top-to-bottom to get back
+up to speed.
+
+------------------------------------------------------------------------
+1. WHAT WE ARE BUILDING (current scope)
+------------------------------------------------------------------------
+A mobile-friendly WEBSITE (not a native app) for collecting photos from
+guests' phones.
+
+User flow:
+  1. A guest scans a QR code.
+  2. The QR opens the website in their phone browser (works on iOS and
+     Android).
+  3. The page shows a big primary button in POLISH that opens the
+     phone's native photo library / picker.
+  4. The guest selects one or more photos.
+  5. Selected photos are shown as thumbnail previews on the page.
+  6. A SEND button is ALWAYS visible, fixed to the bottom of the screen.
+  7. Tapping SEND uploads the selected photos (to a backend we add
+     later) with a progress indicator and a success confirmation.
+
+This pattern is commonly used for weddings / parties / events where many
+guests contribute photos to one shared collection.
+
+------------------------------------------------------------------------
+2. KEY DECISIONS AGREED SO FAR
+------------------------------------------------------------------------
+- PLATFORM: Web page (mobile browser), not a native iOS/Android app.
+  Works on both iOS and Android because it's just a website.
+- ACCESS: Via QR code that points to the website URL.
+- USERS: Anonymous guests. No login, no account, no name required.
+- UI STYLE: Minimal & functional. Clean, just the essentials:
+  upload button, thumbnail previews, sticky SEND button, progress.
+  No branding/logo for now.
+- LANGUAGE: Polish UI text.
+- WORDING CONFIRMED:
+    * Top/upload button:  "PRZEŚLIJ ZDJĘCIA"
+    * Send button:        "WYŚLIJ"
+- MEDIA TYPES: Images AND videos accepted.
+- LIMITS: None for now. FUTURE TOPIC (revisit): client-side compression
+  for very large files (example threshold ~300 MB) before upload.
+- HOSTING (for now): GitHub Pages (github.io) - static hosting only.
+- STORAGE (for now): NONE wired up yet. See section 3 (important).
+- BACKEND (for now): Intentionally left OUT. To be added later when the
+  on-prem server is ready (see section 4).
+
+------------------------------------------------------------------------
+3. IMPORTANT TECHNICAL CONSTRAINT (read this)
+------------------------------------------------------------------------
+GitHub Pages can HOST the website, but it CANNOT STORE uploaded files.
+  - GitHub Pages is static hosting: it only serves HTML/CSS/JS.
+  - It has no server-side code, so it cannot receive or save uploads.
+  - A git repo is not writable by website visitors, and committing
+    guests' photos into a (public) repo would be wrong anyway.
+
+Therefore, in the current phase:
+  - The website is fully built and testable.
+  - The SEND button is wired to a CLEARLY-MARKED PLACEHOLDER upload
+    function (a single, isolated function in the code).
+  - When the real server exists, we change only that one function.
+
+What "works" now vs. later:
+  - WORKS NOW: QR -> page loads -> Polish upload button -> native photo
+    picker -> multi-select -> thumbnail previews -> sticky SEND button
+    -> progress UI -> success/error messages.
+  - NOT YET: photos actually being stored somewhere. That needs the
+    backend (section 4).
+
+------------------------------------------------------------------------
+4. PLANNED NEXT PHASE - ON-PREM SERVER (to do later)
+------------------------------------------------------------------------
+You will set up an on-prem (home) server later and ask Claude to "plug
+it in." When that happens, we will need to decide/answer:
+
+  - Server type/OS (NAS, Raspberry Pi, old PC, Linux/Windows, Docker?).
+  - Public reachability: phones uploading over cellular need the server
+    reachable from the internet (port forward + dynamic DNS, a tunnel
+    like Cloudflare Tunnel/Tailscale Funnel, or a reverse proxy).
+  - HTTPS certificate (browsers + camera/file APIs strongly prefer
+    HTTPS; mixed content from an https page to http server will fail).
+  - The upload endpoint contract (e.g. POST multipart/form-data to
+    /upload, returns 200 on success).
+  - Where files land on disk and how they're named/organized
+    (e.g. one folder, or by date, to avoid filename collisions).
+  - CORS: the server must allow uploads from the GitHub Pages origin.
+  - Basic abuse protection (see section 5).
+
+Integration point in the code: the single placeholder upload function.
+Only its body (the actual network call to the server) needs to change.
+
+------------------------------------------------------------------------
+5. OPEN QUESTIONS / NOT YET DECIDED
+------------------------------------------------------------------------
+- LARGE-FILE COMPRESSION (FUTURE TOPIC - agreed to revisit): compress
+  files above some threshold (example: ~300 MB) before uploading, to
+  reduce upload time/storage. Not implemented in v1. Notes for later:
+    * Images: can be downscaled/re-encoded client-side via canvas.
+    * Videos: real client-side compression is heavy (needs something
+      like ffmpeg.wasm) and slow on phones; may be better handled
+      server-side once the on-prem server exists. Decide approach then.
+- PASSWORD / ACCESS PROTECTION: none for now (fully open). Optional
+  later.
+- QR CODE: we still need to generate it once the final URL is known
+  (the github.io URL). Trivial to produce from the URL.
+
+------------------------------------------------------------------------
+6. TECH PLAN (proposed - not yet built)
+------------------------------------------------------------------------
+- Plain static site: index.html + styles + a small script. No framework
+  needed for v1 (keeps it simple and GitHub-Pages-friendly). Could use a
+  framework later if desired.
+- Native picker via:  <input type="file" accept="image/*" multiple>
+  (Optionally capture from camera too; multi-select from library is the
+  priority.)
+- Thumbnail previews via object URLs in the browser.
+- Sticky SEND button via fixed/sticky CSS positioning at viewport bottom.
+- Upload via fetch() multipart/form-data inside the ONE placeholder
+  function (currently stubbed/simulated).
+- Deploy: push to a GitHub repo, enable GitHub Pages -> get the
+  https://<user>.github.io/<repo>/ URL -> make the QR from that URL.
+
+------------------------------------------------------------------------
+7. STATUS
+------------------------------------------------------------------------
+[x] Frontend page built  (index.html, styles.css, app.js)
+[ ] Hosted on GitHub Pages
+[ ] QR code generated from final URL
+[x] Polish wording confirmed  (PRZEŚLIJ ZDJĘCIA / WYŚLIJ)
+[x] Limits/protection decided  (none for v1; compression is a future topic)
+[ ] On-prem server built
+[ ] Backend plugged into the placeholder upload function
+
+Currently: frontend built and testable locally. The SEND action is a
+SIMULATED placeholder (see uploadFiles() in app.js) - it shows realistic
+progress but does NOT send anywhere yet. Next steps: push to GitHub, turn
+on Pages, generate the QR from the URL. Backend gets plugged into the one
+placeholder function later.
+
+------------------------------------------------------------------------
+8. HOW TO RESUME THIS PROJECT
+------------------------------------------------------------------------
+Open a new conversation and say: "Read instructions.txt in the PhotoTool
+folder and continue." Claude should read this file first, then proceed
+from the STATUS section.
+========================================================================

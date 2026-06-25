@@ -1,0 +1,200 @@
+/* PhotoTool - minimal & functional upload page
+   Mobile-first. Sticky send bar always visible at the bottom. */
+
+:root {
+  --bg: #111111;
+  --surface: #1c1c1e;
+  --surface-2: #2c2c2e;
+  --text: #f5f5f7;
+  --muted: #a1a1a6;
+  --accent: #0a84ff;
+  --accent-press: #0060df;
+  --success: #30d158;
+  --danger: #ff453a;
+  --radius: 16px;
+  --send-bar-h: 88px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.hidden { display: none !important; }
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 0;
+  min-height: 100vh;
+}
+
+.header { text-align: center; margin: 12px 0 24px; }
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--muted);
+  margin: 0 auto;
+  max-width: 36ch;
+  line-height: 1.4;
+}
+
+/* Big primary pick button */
+.pick-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 22px 16px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px dashed #3a3a3c;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+}
+.pick-button:active { transform: scale(0.99); background: var(--surface-2); }
+.pick-icon { font-size: 26px; line-height: 1; color: var(--accent); }
+
+.selection-info {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin: 16px 0 4px;
+}
+
+/* Thumbnail grid */
+.previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.thumb img,
+.thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* little "VIDEO" tag on video thumbs */
+.thumb .badge {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+
+/* remove (x) button on each thumb */
+.thumb .remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 16px;
+  line-height: 26px;
+  text-align: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.footer-spacer { height: calc(var(--send-bar-h) + 24px); }
+
+/* Sticky send bar */
+.send-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(17, 17, 17, 0.92);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-top: 1px solid #2a2a2c;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+}
+
+.send-bar { margin: 0 auto; }
+
+.send-button {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 16px;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease, opacity 0.15s ease;
+}
+.send-button:active { transform: scale(0.99); background: var(--accent-press); }
+.send-button:disabled { opacity: 0.4; cursor: not-allowed; }
+.send-button.is-success { background: var(--success); }
+.send-button.is-error { background: var(--danger); }
+
+.progress-wrap {
+  max-width: 720px;
+  margin: 10px auto 0;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+/* Light mode niceties */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f2f2f7;
+    --surface: #ffffff;
+    --surface-2: #e5e5ea;
+    --text: #111111;
+    --muted: #6b6b70;
+  }
+  .pick-button { border-color: #c7c7cc; }
+  .send-bar { background: rgba(242, 242, 247, 0.92); border-top-color: #d1d1d6; }
+}
