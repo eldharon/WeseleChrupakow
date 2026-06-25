@@ -166,22 +166,23 @@ Only its body (the actual network call to the server) needs to change.
 [x] Storage target chosen: Google Drive folder via Apps Script
 [x] Apps Script backend written (google-apps-script.gs)
 [x] Website wired to upload to Apps Script (real uploadFiles in app.js)
-[ ] User deploys the Apps Script & provides the /exec URL
-[ ] CONFIG.WEB_APP_URL filled in app.js + pushed
-[ ] End-to-end test (guest phone -> Drive folder)
+[x] User deployed the Apps Script & provided the /exec URL
+[x] CONFIG.WEB_APP_URL filled in app.js + pushed
+[x] End-to-end test PASSED (test file landed in the Drive folder)
+[ ] Generate QR code from the live URL
 [ ] On-prem server (optional future alternative)
 
-Currently: code is ready to upload to Google Drive, but it is NOT live
-until the user deploys google-apps-script.gs and we paste the resulting
-/exec URL into CONFIG.WEB_APP_URL in app.js. Until then, pressing SEND
-shows a "not configured" error on purpose.
+LIVE CONFIG:
+  Drive folder ID:  1ngd11zAA9l3wL64o-eipMfzL1-c2R0yZ
+  Apps Script URL:  https://script.google.com/macros/s/AKfycbzFw_SBz_7XW
+                    shg1My4hX5l5lRghRvrcaBBdk9j1aNogmRu_-AzUBZEQCd_4vQaSh
+                    PG/exec
+  (stored in CONFIG.WEB_APP_URL in app.js)
 
-TO FINISH (user's part, in Google account):
-  Follow the SETUP steps at the top of google-apps-script.gs:
-  create a Drive folder, paste its ID into FOLDER_ID, deploy as a Web app
-  (Execute as: Me / Who has access: Anyone), then hand the /exec URL back.
-THEN (Claude's part):
-  Put that URL in CONFIG.WEB_APP_URL, push, and test end-to-end.
+Currently: FULLY WORKING. Photos/videos picked on the site upload into
+the Google Drive folder. Verified with a test POST that created
+"phototool-test.png" in the folder. Remaining nice-to-have: generate the
+QR code pointing at https://eldharon.github.io/WeseleChrupakow/.
 
 ------------------------------------------------------------------------
 8. HOW TO RESUME THIS PROJECT

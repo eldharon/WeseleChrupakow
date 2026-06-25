@@ -14,7 +14,7 @@
   // See google-apps-script.gs for how to get it. Until this is filled in,
   // the SEND button will show a clear "not configured" error.
   var CONFIG = {
-    WEB_APP_URL: ""
+    WEB_APP_URL: "https://script.google.com/macros/s/AKfycbzFw_SBz_7XWshg1My4hX5l5lRghRvrcaBBdk9j1aNogmRu_-AzUBZEQCd_4vQaShPG/exec"
   };
 
   // ----- Polish UI strings (kept in one place for easy editing) -----
