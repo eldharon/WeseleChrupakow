@@ -34,8 +34,8 @@
  * ---------------------------------------------------------------------
  */
 
-// >>> PASTE YOUR DRIVE FOLDER ID HERE <<<
-var FOLDER_ID = "PASTE_YOUR_DRIVE_FOLDER_ID_HERE";
+// Drive folder ID (already filled in for you).
+var FOLDER_ID = "1ngd11zAA9l3wL64o-eipMfzL1-c2R0yZ";
 
 /** Receives one uploaded file and saves it to the Drive folder. */
 function doPost(e) {
