@@ -26,12 +26,17 @@
     selectedOne: "Wybrano 1 plik",
     selectedFew: "Wybrano {n} pliki",
     selectedMany: "Wybrano {n} plików",
-    videoBadge: "FILM"
+    videoBadge: "FILM",
+    maxReached: "Maksymalnie 100 plików."
   };
+
+  // Cap how many files can be queued at once (keeps the phone responsive).
+  var MAX_FILES = 100;
 
   // ----- Element references -----
   var fileInput = document.getElementById("fileInput");
   var pickButton = document.getElementById("pickButton");
+  var hero = document.getElementById("hero");
   var previews = document.getElementById("previews");
   var selectionInfo = document.getElementById("selectionInfo");
   var sendButton = document.getElementById("sendButton");
@@ -45,6 +50,7 @@
   var selected = [];
   var nextId = 1;
   var isSending = false;
+  var activeId = null; // which item is shown in the big preview
 
   // ----- Helpers -----
 
@@ -67,6 +73,40 @@
       selectionInfo.hidden = true;
     }
     sendButton.disabled = n === 0 || isSending;
+  }
+
+  // Show one item large in the hero area. Only ONE media element exists at
+  // a time here, so the big preview never piles up memory/decoders.
+  function renderHero(item) {
+    hero.innerHTML = "";
+    if (!item) { hero.hidden = true; return; }
+    var isVideo = item.file.type.indexOf("video/") === 0;
+    var media;
+    if (isVideo) {
+      media = document.createElement("video");
+      media.src = item.url;
+      media.controls = true;
+      media.playsInline = true;
+      media.preload = "metadata";
+    } else {
+      media = document.createElement("img");
+      media.src = item.url;
+      media.alt = "";
+      media.decoding = "async";
+    }
+    hero.appendChild(media);
+    hero.hidden = false;
+  }
+
+  function setActive(id) {
+    activeId = id;
+    var item = selected.find(function (it) { return it.id === id; });
+    renderHero(item || null);
+    // highlight the matching thumbnail
+    var nodes = previews.querySelectorAll(".thumb");
+    Array.prototype.forEach.call(nodes, function (node) {
+      node.classList.toggle("is-active", node.dataset.id === String(id));
+    });
   }
 
   function makeThumb(item) {
@@ -101,21 +141,28 @@
     remove.type = "button";
     remove.textContent = "×";
     remove.setAttribute("aria-label", "Usuń");
-    remove.addEventListener("click", function () {
+    remove.addEventListener("click", function (e) {
+      e.stopPropagation(); // don't also trigger the thumbnail's select
       removeItem(item.id);
     });
     wrap.appendChild(remove);
+
+    // Tapping the thumbnail focuses it in the big preview above.
+    wrap.addEventListener("click", function () { setActive(item.id); });
 
     return wrap;
   }
 
   function addFiles(fileList) {
     var files = Array.prototype.slice.call(fileList || []);
+    var hitLimit = false;
+    var lastAddedId = null;
     files.forEach(function (file) {
       // Only images and videos; the input already filters, but double-check.
       if (file.type.indexOf("image/") !== 0 && file.type.indexOf("video/") !== 0) {
         return;
       }
+      if (selected.length >= MAX_FILES) { hitLimit = true; return; }
       var item = {
         id: nextId++,
         file: file,
@@ -123,8 +170,15 @@
       };
       selected.push(item);
       previews.appendChild(makeThumb(item));
+      lastAddedId = item.id;
     });
+    // Focus the most recently added file in the big preview.
+    if (lastAddedId !== null) setActive(lastAddedId);
     updateUi();
+    if (hitLimit) {
+      selectionInfo.hidden = false;
+      selectionInfo.textContent = STR.maxReached + " " + selectionText(selected.length);
+    }
   }
 
   function removeItem(id) {
@@ -134,6 +188,16 @@
     selected.splice(idx, 1);
     var node = previews.querySelector('.thumb[data-id="' + id + '"]');
     if (node) node.remove();
+    // If we removed the focused item, focus a neighbour (or clear).
+    if (activeId === id) {
+      var fallback = selected[Math.min(idx, selected.length - 1)];
+      if (fallback) {
+        setActive(fallback.id);
+      } else {
+        activeId = null;
+        renderHero(null);
+      }
+    }
     updateUi();
   }
 
@@ -145,6 +209,8 @@
   function clearAll() {
     selected.forEach(function (it) { URL.revokeObjectURL(it.url); });
     selected = [];
+    activeId = null;
+    renderHero(null);
     previews.innerHTML = "";
     fileInput.value = "";
     updateUi();

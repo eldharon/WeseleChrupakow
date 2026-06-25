@@ -78,6 +78,27 @@ html, body {
   margin: 16px 0 4px;
 }
 
+/* Large preview ("hero") of the focused file.
+   Capped height so it never gets huge or janky; the media is only
+   DISPLAY-scaled (we never resize the actual file here). */
+.hero {
+  margin-top: 16px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 42vh;
+}
+.hero img,
+.hero video {
+  width: 100%;
+  max-height: 42vh;
+  object-fit: contain;
+  display: block;
+}
+
 /* Thumbnail grid */
 .previews {
   display: grid;
@@ -92,7 +113,13 @@ html, body {
   border-radius: 12px;
   overflow: hidden;
   background: var(--surface-2);
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  transition: outline-color 0.12s ease;
 }
+/* the thumbnail currently shown in the big preview */
+.thumb.is-active { outline-color: var(--accent); }
 .thumb img,
 .thumb video {
   width: 100%;
